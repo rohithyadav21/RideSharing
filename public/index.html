@@ -60,18 +60,21 @@
           </div>
         </div>
 
-        <!-- User Profile Chip or Login Button -->
-        <div id="authContainer">
-          <div id="userChip" class="user-chip" onclick="app.openProfileModal()">
+        <!-- User Profile Chip and Logout Button or Guest Login/Signup Links -->
+        <div id="authContainer" style="display: flex; align-items: center; gap: 0.5rem;">
+          <div id="userChip" class="user-chip" onclick="app.openProfileModal()" title="View Profile">
             <img id="userAvatar" src="" alt="Avatar" class="avatar-sm">
             <div class="user-meta">
               <span id="userName" class="user-name">Loading...</span>
               <span id="userRoleBadge" class="badge-role">Student</span>
             </div>
           </div>
-          <div id="guestControls" class="hidden">
-            <button class="btn btn-outline btn-sm" onclick="app.openAuthModal('login')">Sign In</button>
-            <button class="btn btn-primary btn-sm" onclick="app.openAuthModal('register')">Register</button>
+          <button id="logoutBtn" class="btn-logout" onclick="app.logout()" title="Sign out of account">
+            <span>🚪</span> <span>Log Out</span>
+          </button>
+          <div id="guestControls" class="hidden" style="display: flex; gap: 0.5rem;">
+            <a href="/login" class="btn btn-outline btn-sm">Sign In</a>
+            <a href="/signup" class="btn btn-primary btn-sm">Sign Up</a>
           </div>
         </div>
       </div>

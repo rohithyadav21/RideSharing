@@ -41,10 +41,19 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Dedicated auth pages
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'), { dotfiles: 'allow' });
+});
+
+app.get('/signup', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'signup.html'), { dotfiles: 'allow' });
+});
+
 // SPA fallback for frontend client routing (compatible with Express 5)
 app.use((req, res, next) => {
   if (req.method === 'GET' && !req.path.startsWith('/api/')) {
-    return res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    return res.sendFile(path.join(__dirname, 'public', 'index.html'), { dotfiles: 'allow' });
   }
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ success: false, message: 'API route not found' });

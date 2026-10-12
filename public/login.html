@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In | Campus Ride Sharing</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20%22100%22%20%22100%22><text y=%22.9em%22 font-size=%2290%22>🚗</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="auth-page-body">
+
+  <div class="auth-page-container">
+    <div class="auth-top-bar">
+      <a href="/" class="auth-back-link">
+        <span>←</span> Back to Campus Dashboard
+      </a>
+    </div>
+
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="brand-icon" style="margin: 0 auto 1rem auto;">🚗</div>
+        <h1 class="auth-title">Welcome Back</h1>
+        <p class="auth-subtitle">Sign in to your Greendale campus account to offer or book rides</p>
+      </div>
+
+      <!-- Alert Box -->
+      <div id="alertBox" class="auth-alert hidden"></div>
+
+      <!-- Quick Demo Users Pills -->
+      <div class="demo-pills-section">
+        <div class="demo-pills-label">⚡ Quick Fill Demo Account:</div>
+        <div class="demo-pills-grid">
+          <button type="button" class="demo-pill" onclick="fillDemo('alex.rivera@greendale.edu')">
+            <span>🚘</span> Alex (Student Driver)
+          </button>
+          <button type="button" class="demo-pill" onclick="fillDemo('marcus.vance@greendale.edu')">
+            <span>⚡</span> Dr. Marcus (Faculty)
+          </button>
+          <button type="button" class="demo-pill" onclick="fillDemo('maya.lin@greendale.edu')">
+            <span>🎒</span> Maya (Student Rider)
+          </button>
+        </div>
+      </div>
+
+      <form id="standaloneLoginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="loginEmail">Campus Email Address</label>
+          <div class="input-icon-wrapper">
+            <span class="input-icon">✉️</span>
+            <input 
+              type="email" 
+              id="loginEmail" 
+              placeholder="e.g. yourname@greendale.edu" 
+              required 
+              autocomplete="email"
+            >
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+            <label for="loginPassword" style="margin-bottom: 0;">Password</label>
+            <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility()">
+              <span id="pwdToggleIcon">👁️</span> Show
+            </button>
+          </div>
+          <div class="input-icon-wrapper">
+            <span class="input-icon">🔒</span>
+            <input 
+              type="password" 
+              id="loginPassword" 
+              placeholder="Enter your password" 
+              required 
+              autocomplete="current-password"
+            >
+          </div>
+        </div>
+
+        <div class="form-row-between">
+          <label class="remember-checkbox">
+            <input type="checkbox" id="rememberMe" checked>
+            <span>Remember this device</span>
+          </label>
+          <span class="hint-text">Default demo password: <code>password123</code></span>
+        </div>
+
+        <button type="submit" id="submitBtn" class="btn btn-primary btn-block btn-lg" style="margin-top: 1.5rem;">
+          <span id="btnText">Sign In to CampusRide 🚗</span>
+          <span id="btnSpinner" class="spinner-sm hidden"></span>
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <p>Don't have a campus account yet?</p>
+        <a href="/signup" class="auth-switch-link">Create a New Account ➔</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Check if redirected from a logout
+    const urlParams = new URLSearchParams(window.location.search);
+    const alertBox = document.getElementById('alertBox');
+    
+    if (urlParams.get('logout') === 'true') {
+      showAlert('You have been successfully logged out.', 'info');
+    }
+
+    function showAlert(msg, type = 'error') {
+      alertBox.textContent = msg;
+      alertBox.className = `auth-alert alert-${type}`;
+      alertBox.classList.remove('hidden');
+    }
+
+    function hideAlert() {
+      alertBox.classList.add('hidden');
+    }
+
+    function fillDemo(email) {
+      document.getElementById('loginEmail').value = email;
+      document.getElementById('loginPassword').value = 'password123';
+      hideAlert();
+      // Highlight submit button
+      const btn = document.getElementById('submitBtn');
+      btn.classList.add('btn-pulse');
+      setTimeout(() => btn.classList.remove('btn-pulse'), 800);
+    }
+
+    function togglePasswordVisibility() {
+      const pwdInput = document.getElementById('loginPassword');
+      const icon = document.getElementById('pwdToggleIcon');
+      if (pwdInput.type === 'password') {
+        pwdInput.type = 'text';
+        icon.textContent = '🙈';
+      } else {
+        pwdInput.type = 'password';
+        icon.textContent = '👁️';
+      }
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      hideAlert();
+
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+
+      const submitBtn = document.getElementById('submitBtn');
+      const btnText = document.getElementById('btnText');
+      const btnSpinner = document.getElementById('btnSpinner');
+
+      submitBtn.disabled = true;
+      btnText.textContent = 'Signing in...';
+      btnSpinner.classList.remove('hidden');
+
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Invalid email or password.');
+        }
+
+        // Store auth token & user
+        localStorage.setItem('campus_ride_token', data.token);
+        localStorage.setItem('campus_user_info', JSON.stringify(data.user));
+
+        showAlert('Login successful! Redirecting to dashboard...', 'success');
+
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 600);
+      } catch (err) {
+        showAlert(err.message, 'error');
+        submitBtn.disabled = false;
+        btnText.textContent = 'Sign In to CampusRide 🚗';
+        btnSpinner.classList.add('hidden');
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up | Campus Ride Sharing</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20%22100%22%20%22100%22><text y=%22.9em%22 font-size=%2290%22>🚗</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="auth-page-body">
+
+  <div class="auth-page-container narrow-signup">
+    <div class="auth-top-bar">
+      <a href="/" class="auth-back-link">
+        <span>←</span> Back to Campus Dashboard
+      </a>
+    </div>
+
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="brand-icon" style="margin: 0 auto 1rem auto;">🚗</div>
+        <h1 class="auth-title">Create Campus Account</h1>
+        <p class="auth-subtitle">Join Greendale's verified commuter network to share rides, split costs, and reduce campus traffic</p>
+      </div>
+
+      <!-- Alert Box -->
+      <div id="alertBox" class="auth-alert hidden"></div>
+
+      <form id="standaloneSignupForm" onsubmit="handleSignup(event)">
+        <!-- Personal Info -->
+        <h3 class="form-section-title" style="margin-top: 0.5rem;">1. Campus Profile</h3>
+        
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="signupName">Full Name *</label>
+            <input type="text" id="signupName" placeholder="e.g. Rachel Adams" required>
+          </div>
+          <div class="form-group flex-1">
+            <label for="signupRole">Campus Role *</label>
+            <select id="signupRole" required>
+              <option value="student">Student</option>
+              <option value="faculty">Faculty Member</option>
+              <option value="staff">Campus Staff</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="signupEmail">Campus Email Address *</label>
+            <input type="email" id="signupEmail" placeholder="rachel.adams@greendale.edu" required>
+            <small class="field-hint">Use your college email for automatic community verification.</small>
+          </div>
+          <div class="form-group flex-1">
+            <label for="signupCampusId">Student / Employee ID *</label>
+            <input type="text" id="signupCampusId" placeholder="e.g. GD-2026-4401" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="signupDept">Academic Department *</label>
+            <input type="text" id="signupDept" placeholder="e.g. Computer Science, Business, Biology..." required>
+          </div>
+          <div class="form-group flex-1">
+            <label for="signupPhone">Mobile Phone Number *</label>
+            <input type="tel" id="signupPhone" placeholder="+1 (555) 321-4567" required>
+            <small class="field-hint">Used for ride pickup coordination.</small>
+          </div>
+        </div>
+
+        <!-- Security -->
+        <h3 class="form-section-title">2. Account Password</h3>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="signupPassword">Password *</label>
+            <input type="password" id="signupPassword" placeholder="Minimum 6 characters" minlength="6" required>
+          </div>
+          <div class="form-group flex-1">
+            <label for="signupConfirmPassword">Confirm Password *</label>
+            <input type="password" id="signupConfirmPassword" placeholder="Re-type password" minlength="6" required>
+          </div>
+        </div>
+
+        <!-- Driver Capability Toggle -->
+        <h3 class="form-section-title">3. Driver Information (Optional)</h3>
+
+        <div class="form-group">
+          <label class="checkbox-pill">
+            <input type="checkbox" id="signupIsDriver" onchange="toggleDriverFields(this.checked)">
+            <span>🚘 I own a vehicle and want to offer empty seats as a driver</span>
+          </label>
+        </div>
+
+        <div id="driverDetailsBlock" class="driver-extra-fields hidden">
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="signupCarModel">Vehicle Make & Model</label>
+              <input type="text" id="signupCarModel" placeholder="e.g. Toyota Corolla Hybrid">
+            </div>
+            <div class="form-group flex-1">
+              <label for="signupCarColor">Color</label>
+              <input type="text" id="signupCarColor" placeholder="e.g. Silver Metallic">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="signupCarPlate">License Plate Number</label>
+              <input type="text" id="signupCarPlate" placeholder="e.g. 8XYZ123">
+            </div>
+            <div class="form-group flex-1">
+              <label for="signupCarSeats">Passenger Capacity</label>
+              <select id="signupCarSeats">
+                <option value="1">1 Passenger Seat</option>
+                <option value="2">2 Passenger Seats</option>
+                <option value="3">3 Passenger Seats</option>
+                <option value="4" selected>4 Passenger Seats</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 1rem;">
+          <label class="checkbox-pill" style="font-weight: 500; font-size: 0.8rem;">
+            <input type="checkbox" id="agreeTerms" required>
+            <span>I agree to follow Campus Safety Guidelines, maintain punctuality, and treat fellow commuters with respect.</span>
+          </label>
+        </div>
+
+        <button type="submit" id="submitBtn" class="btn btn-primary btn-block btn-lg" style="margin-top: 1.5rem;">
+          <span id="btnText">Complete Campus Registration 🎉</span>
+          <span id="btnSpinner" class="spinner-sm hidden"></span>
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <p>Already have an account?</p>
+        <a href="/login" class="auth-switch-link">Sign In to CampusRide ➔</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const alertBox = document.getElementById('alertBox');
+
+    function showAlert(msg, type = 'error') {
+      alertBox.textContent = msg;
+      alertBox.className = `auth-alert alert-${type}`;
+      alertBox.classList.remove('hidden');
+      alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function hideAlert() {
+      alertBox.classList.add('hidden');
+    }
+
+    function toggleDriverFields(checked) {
+      document.getElementById('driverDetailsBlock').classList.toggle('hidden', !checked);
+    }
+
+    async function handleSignup(e) {
+      e.preventDefault();
+      hideAlert();
+
+      const pwd = document.getElementById('signupPassword').value;
+      const confirmPwd = document.getElementById('signupConfirmPassword').value;
+
+      if (pwd !== confirmPwd) {
+        showAlert('Passwords do not match. Please re-enter your password.', 'error');
+        return;
+      }
+
+      const isDriver = document.getElementById('signupIsDriver').checked;
+
+      const payload = {
+        name: document.getElementById('signupName').value.trim(),
+        role: document.getElementById('signupRole').value,
+        email: document.getElementById('signupEmail').value.trim(),
+        campus_id: document.getElementById('signupCampusId').value.trim(),
+        department: document.getElementById('signupDept').value.trim(),
+        phone: document.getElementById('signupPhone').value.trim(),
+        password: pwd,
+        is_driver: isDriver ? 1 : 0,
+        vehicle_model: isDriver ? document.getElementById('signupCarModel').value.trim() : null,
+        vehicle_color: isDriver ? document.getElementById('signupCarColor').value.trim() : null,
+        vehicle_plate: isDriver ? document.getElementById('signupCarPlate').value.trim() : null,
+        vehicle_seats: isDriver ? Number(document.getElementById('signupCarSeats').value) : 4
+      };
+
+      const submitBtn = document.getElementById('submitBtn');
+      const btnText = document.getElementById('btnText');
+      const btnSpinner = document.getElementById('btnSpinner');
+
+      submitBtn.disabled = true;
+      btnText.textContent = 'Creating account...';
+      btnSpinner.classList.remove('hidden');
+
+      try {
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Registration failed.');
+        }
+
+        // Store session token and user
+        localStorage.setItem('campus_ride_token', data.token);
+        localStorage.setItem('campus_user_info', JSON.stringify(data.user));
+
+        showAlert('Account registered successfully! Redirecting to campus dashboard...', 'success');
+
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 800);
+      } catch (err) {
+        showAlert(err.message, 'error');
+        submitBtn.disabled = false;
+        btnText.textContent = 'Complete Campus Registration 🎉';
+        btnSpinner.classList.remove('hidden');
+      }
+    }
+  </script>
+</body>
+</html>

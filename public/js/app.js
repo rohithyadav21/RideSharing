@@ -118,8 +118,13 @@ const app = {
   },
 
   updateUserUI(user) {
-    document.getElementById('userChip').classList.remove('hidden');
-    document.getElementById('guestControls').classList.add('hidden');
+    const userChip = document.getElementById('userChip');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const guestControls = document.getElementById('guestControls');
+
+    if (userChip) userChip.classList.remove('hidden');
+    if (logoutBtn) logoutBtn.classList.remove('hidden');
+    if (guestControls) guestControls.classList.add('hidden');
 
     document.getElementById('userName').textContent = user.name;
     document.getElementById('userAvatar').src = user.avatar;
@@ -141,8 +146,30 @@ const app = {
   },
 
   showGuestUI() {
-    document.getElementById('userChip').classList.add('hidden');
-    document.getElementById('guestControls').classList.remove('hidden');
+    const userChip = document.getElementById('userChip');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const guestControls = document.getElementById('guestControls');
+
+    if (userChip) userChip.classList.add('hidden');
+    if (logoutBtn) logoutBtn.classList.add('hidden');
+    if (guestControls) guestControls.classList.remove('hidden');
+
+    const roleNameEl = document.getElementById('currentRoleName');
+    if (roleNameEl) {
+      roleNameEl.textContent = 'Guest (Sign In)';
+    }
+  },
+
+  logout() {
+    API.setToken(null);
+    State.setCurrentUser(null);
+    this.showGuestUI();
+    this.closeModal('profileModal');
+    Components.showToast('You have been logged out.', 'info');
+    this.renderDemoUserDropdown();
+    this.fetchRides();
+    const badge = document.getElementById('pendingRequestsBadge');
+    if (badge) badge.classList.add('hidden');
   },
 
   toggleDemoDropdown(forceState = null) {
@@ -753,7 +780,8 @@ const app = {
         </div>
       ` : ''}
 
-      <div class="modal-actions" style="margin-top: 2rem;">
+      <div class="modal-actions" style="margin-top: 2rem; display: flex; justify-content: space-between;">
+        <button class="btn btn-danger-outline" onclick="app.logout()">Log Out 🚪</button>
         <button class="btn btn-outline" onclick="app.closeModal('profileModal')">Close</button>
       </div>
     `;
