@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Ride Sharing | Safe, Green & Affordable Commutes</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20%22100%22%20%22100%22><text y=%22.9em%22 font-size=%2290%22>🚗</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- Top Announcement Bar -->
+  <div class="announcement-bar">
+    <div class="container announcement-inner">
+      <span>🌿 <strong>Greendale Green Campus Initiative:</strong> Over 560 kg of CO₂ saved through student & staff carpools this semester!</span>
+      <button class="text-btn" onclick="app.showSafetyModal()">Safety Guidelines & SOS 🛡️</button>
+    </div>
+  </div>
+
+  <!-- Main Navigation Header -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <div class="nav-brand" onclick="app.navigateTo('explore')">
+        <div class="brand-icon">🚗</div>
+        <div class="brand-text">
+          <span class="brand-title">CampusRide</span>
+          <span class="brand-subtitle">Greendale University</span>
+        </div>
+      </div>
+
+      <nav class="nav-links">
+        <button class="nav-link active" data-view="explore" onclick="app.navigateTo('explore')">
+          <span class="nav-icon">🔍</span> Explore Rides
+        </button>
+        <button class="nav-link" data-view="post-ride" onclick="app.navigateTo('post-ride')">
+          <span class="nav-icon">➕</span> Post a Ride
+        </button>
+        <button class="nav-link" data-view="my-rides" onclick="app.navigateTo('my-rides')">
+          <span class="nav-icon">📋</span> My Rides & Bookings
+          <span id="pendingRequestsBadge" class="badge-dot hidden"></span>
+        </button>
+        <button class="nav-link" data-view="eco" onclick="app.navigateTo('eco')">
+          <span class="nav-icon">🌱</span> Eco Impact
+        </button>
+      </nav>
+
+      <div class="nav-actions">
+        <!-- Quick Demo Switcher -->
+        <div class="dropdown-wrapper">
+          <button class="btn btn-outline btn-sm demo-switcher-btn" onclick="app.toggleDemoDropdown()">
+            <span>⚡ Demo Role:</span>
+            <strong id="currentRoleName">Alex (Driver)</strong>
+            <span>▾</span>
+          </button>
+          <div id="demoDropdown" class="dropdown-menu hidden">
+            <div class="dropdown-header">Switch Demo User</div>
+            <div id="demoUserList"></div>
+          </div>
+        </div>
+
+        <!-- User Profile Chip or Login Button -->
+        <div id="authContainer">
+          <div id="userChip" class="user-chip" onclick="app.openProfileModal()">
+            <img id="userAvatar" src="" alt="Avatar" class="avatar-sm">
+            <div class="user-meta">
+              <span id="userName" class="user-name">Loading...</span>
+              <span id="userRoleBadge" class="badge-role">Student</span>
+            </div>
+          </div>
+          <div id="guestControls" class="hidden">
+            <button class="btn btn-outline btn-sm" onclick="app.openAuthModal('login')">Sign In</button>
+            <button class="btn btn-primary btn-sm" onclick="app.openAuthModal('register')">Register</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main View Container -->
+  <main class="main-content">
+    
+    <!-- VIEW 1: EXPLORE RIDES -->
+    <section id="view-explore" class="app-view active">
+      <!-- Hero Banner -->
+      <div class="hero-banner">
+        <div class="container hero-content">
+          <div class="hero-text">
+            <span class="hero-tag">Campus Transportation Network</span>
+            <h1 class="hero-title">Share Rides. Save Money.<br>Cut Campus Emissions.</h1>
+            <p class="hero-desc">Connect with verified Greendale students and faculty commuting along your route. Safe, cost-split, and reliable campus carpooling.</p>
+          </div>
+          <div class="hero-stats-cards" id="heroStatsContainer">
+            <div class="stat-mini-card">
+              <div class="stat-num" id="statRidesCount">--</div>
+              <div class="stat-lbl">Active Campus Rides</div>
+            </div>
+            <div class="stat-mini-card">
+              <div class="stat-num text-success" id="statCo2Saved">-- kg</div>
+              <div class="stat-lbl">CO₂ Reduced</div>
+            </div>
+            <div class="stat-mini-card">
+              <div class="stat-num text-primary" id="statMoneySaved">$ --</div>
+              <div class="stat-lbl">Travel Cost Saved</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="container search-section">
+        <!-- Search & Filter Card -->
+        <div class="filter-card">
+          <div class="filter-tabs">
+            <button class="filter-tab active" data-direction="all" onclick="app.setDirectionFilter('all')">All Directions</button>
+            <button class="filter-tab" data-direction="to_campus" onclick="app.setDirectionFilter('to_campus')">🏫 To Campus</button>
+            <button class="filter-tab" data-direction="from_campus" onclick="app.setDirectionFilter('from_campus')">🏡 From Campus</button>
+            <button class="filter-tab" data-direction="inter_campus" onclick="app.setDirectionFilter('inter_campus')">🔄 Inter-Campus</button>
+          </div>
+
+          <form id="searchForm" class="search-form" onsubmit="app.handleSearchSubmit(event)">
+            <div class="form-grid">
+              <div class="input-group">
+                <label for="searchOrigin">Starting Location</label>
+                <div class="input-icon-wrapper">
+                  <span class="input-icon">📍</span>
+                  <input type="text" id="searchOrigin" placeholder="e.g. Downtown Metro, Northside...">
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label for="searchDestination">Destination</label>
+                <div class="input-icon-wrapper">
+                  <span class="input-icon">🎯</span>
+                  <input type="text" id="searchDestination" placeholder="e.g. Science Complex, Central Library...">
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label for="searchDate">Date</label>
+                <div class="input-icon-wrapper">
+                  <span class="input-icon">📅</span>
+                  <input type="date" id="searchDate">
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label for="searchSeats">Seats Needed</label>
+                <div class="input-icon-wrapper">
+                  <span class="input-icon">👥</span>
+                  <select id="searchSeats">
+                    <option value="1">1 Seat</option>
+                    <option value="2">2 Seats</option>
+                    <option value="3">3 Seats</option>
+                    <option value="4">4+ Seats</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Additional filters bar -->
+            <div class="filter-options-bar">
+              <div class="chips-list">
+                <span class="chip-label">Quick Filters:</span>
+                <button type="button" class="tag-chip" onclick="app.quickFilterToday()">Today's Rides</button>
+                <button type="button" class="tag-chip" onclick="app.quickFilterFree()">Free / Split Only</button>
+                <button type="button" class="tag-chip" onclick="app.quickFilterReset()">Reset All</button>
+              </div>
+              <div class="search-actions">
+                <button type="submit" class="btn btn-primary">Find Rides 🚗</button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Rides Results Header -->
+        <div class="results-header">
+          <div>
+            <h2 class="section-title">Available Campus Rides</h2>
+            <p class="section-subtitle" id="ridesCountSubtitle">Showing rides scheduled by verified campus drivers</p>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="app.navigateTo('post-ride')">
+            + Offer a Ride Instead
+          </button>
+        </div>
+
+        <!-- Rides Grid Container -->
+        <div id="ridesGrid" class="rides-grid">
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Scanning campus commute schedule...</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: POST A RIDE -->
+    <section id="view-post-ride" class="app-view">
+      <div class="container narrow-container">
+        <div class="page-header">
+          <span class="badge-tag">Driver Portal</span>
+          <h1 class="page-title">Post an Available Ride</h1>
+          <p class="page-desc">Share your empty seats with fellow students or faculty. Reduce traffic, cut fuel costs, and make campus commuting pleasant.</p>
+        </div>
+
+        <div class="card form-card">
+          <form id="postRideForm" onsubmit="app.handlePostRideSubmit(event)">
+            <!-- Step 1: Route -->
+            <h3 class="form-section-title">1. Commute Route</h3>
+            
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label for="postDirection">Trip Direction *</label>
+                <select id="postDirection" required onchange="app.handleDirectionChange(this.value)">
+                  <option value="to_campus">🏫 Commuting TO Campus</option>
+                  <option value="from_campus">🏡 Returning FROM Campus</option>
+                  <option value="inter_campus">🔄 Between Campus Facilities</option>
+                  <option value="other">🚗 Off-Campus / Airport / Weekend Trip</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label for="postOrigin">Starting Location *</label>
+                <input type="text" id="postOrigin" required placeholder="e.g. Downtown Metro Station, Oak Street...">
+              </div>
+              <div class="form-group flex-1">
+                <label for="postOriginLandmark">Pickup Landmark / Gate</label>
+                <input type="text" id="postOriginLandmark" placeholder="e.g. Near Coffee Haven, East Exit...">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label for="postDestination">Destination *</label>
+                <input type="text" id="postDestination" required placeholder="e.g. Campus Science Complex, Library...">
+              </div>
+              <div class="form-group flex-1">
+                <label for="postDestLandmark">Drop-off Landmark</label>
+                <input type="text" id="postDestLandmark" placeholder="e.g. Building B Front, Clock Tower...">
+              </div>
+            </div>
+
+            <!-- Step 2: Schedule & Capacity -->
+            <h3 class="form-section-title">2. Schedule & Capacity</h3>
+
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label for="postDate">Departure Date *</label>
+                <input type="date" id="postDate" required>
+              </div>
+              <div class="form-group flex-1">
+                <label for="postTime">Departure Time *</label>
+                <input type="time" id="postTime" required>
+              </div>
+              <div class="form-group flex-1">
+                <label for="postDuration">Est. Travel Time (mins)</label>
+                <input type="number" id="postDuration" min="5" max="180" value="25">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label for="postTotalSeats">Seats Available *</label>
+                <select id="postTotalSeats" required>
+                  <option value="1">1 Passenger Seat</option>
+                  <option value="2">2 Passenger Seats</option>
+                  <option value="3" selected>3 Passenger Seats</option>
+                  <option value="4">4 Passenger Seats</option>
+                </select>
+              </div>
+              <div class="form-group flex-1">
+                <label for="postPrice">Price per Seat ($) *</label>
+                <div class="input-prefix-wrapper">
+                  <span class="prefix">$</span>
+                  <input type="number" id="postPrice" step="0.5" min="0" max="50" value="2.5" placeholder="0 for Free">
+                </div>
+                <small class="field-hint">Enter 0 for a free / eco-contribution carpool.</small>
+              </div>
+            </div>
+
+            <!-- Step 3: Vehicle & Preferences -->
+            <h3 class="form-section-title">3. Vehicle & Ride Preferences</h3>
+
+            <div class="form-group">
+              <label for="postVehicleInfo">Vehicle Model & License Plate *</label>
+              <input type="text" id="postVehicleInfo" placeholder="e.g. Honda Civic Hybrid (Blue) • CAMPUS-88" required>
+            </div>
+
+            <div class="preferences-grid">
+              <label class="checkbox-pill">
+                <input type="checkbox" id="prefLuggage" checked>
+                <span>🧳 Luggage / Bag Space</span>
+              </label>
+              <label class="checkbox-pill">
+                <input type="checkbox" id="prefMusic" checked>
+                <span>🎵 Music Allowed</span>
+              </label>
+              <label class="checkbox-pill">
+                <input type="checkbox" id="prefAc" checked>
+                <span>❄️ AC Enabled</span>
+              </label>
+              <label class="checkbox-pill">
+                <input type="checkbox" id="prefWomenOnly">
+                <span>👩 Women-Only Commute</span>
+              </label>
+            </div>
+
+            <div class="form-group">
+              <label for="postNotes">Driver Notes / Meeting Instructions</label>
+              <textarea id="postNotes" rows="2" placeholder="e.g. I will wait with hazard lights on for 5 minutes. Feel free to text me if running late!"></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-outline" onclick="app.navigateTo('explore')">Cancel</button>
+              <button type="submit" class="btn btn-primary btn-lg">Publish Ride to Campus 🚀</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: MY RIDES & BOOKINGS -->
+    <section id="view-my-rides" class="app-view">
+      <div class="container">
+        <div class="page-header flex-header">
+          <div>
+            <h1 class="page-title">My Campus Travel Hub</h1>
+            <p class="page-desc">Track your bookings as a passenger and manage requests for rides you are driving.</p>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="app.navigateTo('post-ride')">+ Post New Ride</button>
+        </div>
+
+        <div class="tabs-container">
+          <div class="tabs-nav">
+            <button class="tab-btn active" data-tab="passenger-bookings" onclick="app.switchMyRidesTab('passenger-bookings')">
+              🎫 My Bookings (As Passenger)
+            </button>
+            <button class="tab-btn" data-tab="driver-rides" onclick="app.switchMyRidesTab('driver-rides')">
+              🚘 My Posted Rides (As Driver)
+            </button>
+          </div>
+
+          <!-- Passenger Tab Content -->
+          <div id="tab-passenger-bookings" class="tab-content active">
+            <div id="passengerBookingsList" class="bookings-list">
+              <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Loading your ride bookings...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Driver Tab Content -->
+          <div id="tab-driver-rides" class="tab-content">
+            <div id="driverRidesList" class="bookings-list">
+              <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Loading rides you are driving...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 4: ECO IMPACT & COMMUNITY -->
+    <section id="view-eco" class="app-view">
+      <div class="container">
+        <div class="page-header text-center">
+          <span class="badge-tag">Greendale Sustainability Dashboard</span>
+          <h1 class="page-title">Campus Green Impact & Leaderboard</h1>
+          <p class="page-desc">Every shared ride takes cars off campus roads, reduces parking congestion, and cuts greenhouse gas emissions.</p>
+        </div>
+
+        <!-- Big Impact Metrics Grid -->
+        <div class="eco-metrics-grid">
+          <div class="eco-card highlight">
+            <div class="eco-icon">🌳</div>
+            <div class="eco-value" id="ecoCo2Val">-- kg</div>
+            <div class="eco-label">Total CO₂ Emissions Prevented</div>
+            <div class="eco-sub" id="ecoTreesEquiv">Equivalent to planting -- mature trees</div>
+          </div>
+
+          <div class="eco-card">
+            <div class="eco-icon">💰</div>
+            <div class="eco-value text-primary" id="ecoMoneyVal">$ --</div>
+            <div class="eco-label">Student & Staff Money Saved</div>
+            <div class="eco-sub">Compared to solo rideshare & fuel costs</div>
+          </div>
+
+          <div class="eco-card">
+            <div class="eco-icon">🛣️</div>
+            <div class="eco-value" id="ecoMilesVal">-- mi</div>
+            <div class="eco-label">Shared Carpool Miles</div>
+            <div class="eco-sub">Fewer solo vehicle trips around campus</div>
+          </div>
+
+          <div class="eco-card">
+            <div class="eco-icon">👥</div>
+            <div class="eco-value text-accent" id="ecoMembersVal">--</div>
+            <div class="eco-label">Active Campus Commuters</div>
+            <div class="eco-sub">Connecting student & faculty drivers</div>
+          </div>
+        </div>
+
+        <!-- Leaderboards Section -->
+        <div class="leaderboard-grid">
+          <div class="card leaderboard-card">
+            <div class="card-header">
+              <h3>🌱 Top Eco Champions</h3>
+              <span class="badge-role">Most CO₂ Saved</span>
+            </div>
+            <div id="ecoLeaderboardList" class="leaderboard-list">
+              <div class="spinner"></div>
+            </div>
+          </div>
+
+          <div class="card leaderboard-card">
+            <div class="card-header">
+              <h3>⭐ Most Trusted Drivers</h3>
+              <span class="badge-role">Highest Rated</span>
+            </div>
+            <div id="driverLeaderboardList" class="leaderboard-list">
+              <div class="spinner"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODALS -->
+
+  <!-- Modal 1: Ride Details & Seat Booking -->
+  <div id="rideModal" class="modal-overlay hidden" onclick="app.closeModalOnOverlay(event, 'rideModal')">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalRideTitle">Ride Details</h2>
+        <button class="modal-close-btn" onclick="app.closeModal('rideModal')">&times;</button>
+      </div>
+      <div class="modal-body" id="modalRideContent">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Ride Coordination Chat -->
+  <div id="chatModal" class="modal-overlay hidden" onclick="app.closeModalOnOverlay(event, 'chatModal')">
+    <div class="modal-card modal-chat">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="chatRideTitle">Ride Coordination Chat</h2>
+          <p class="modal-subtitle" id="chatRideSubtitle">Coordinate pickup location & timing with your driver and co-riders</p>
+        </div>
+        <button class="modal-close-btn" onclick="app.closeModal('chatModal')">&times;</button>
+      </div>
+      <div class="chat-container">
+        <div id="chatMessages" class="chat-messages-box">
+          <!-- Messages inserted here -->
+        </div>
+        <form id="chatForm" class="chat-input-form" onsubmit="app.handleSendMessage(event)">
+          <input type="text" id="chatInput" placeholder="Type a message (e.g. 'I am at the north exit in a blue jacket')..." autocomplete="off" required>
+          <button type="submit" class="btn btn-primary">Send 💬</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Submit Review -->
+  <div id="reviewModal" class="modal-overlay hidden" onclick="app.closeModalOnOverlay(event, 'reviewModal')">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">Leave Trip Feedback</h2>
+        <button class="modal-close-btn" onclick="app.closeModal('reviewModal')">&times;</button>
+      </div>
+      <form id="reviewForm" class="modal-body" onsubmit="app.handleSubmitReview(event)">
+        <input type="hidden" id="reviewRideId">
+        <input type="hidden" id="reviewRevieweeId">
+        
+        <p class="modal-desc" id="reviewTargetPrompt">Rate your travel experience with your fellow campus commuter:</p>
+
+        <div class="rating-picker">
+          <label><input type="radio" name="starRating" value="5" checked> ⭐ 5 (Excellent)</label>
+          <label><input type="radio" name="starRating" value="4"> ⭐ 4 (Great)</label>
+          <label><input type="radio" name="starRating" value="3"> ⭐ 3 (Average)</label>
+          <label><input type="radio" name="starRating" value="2"> ⭐ 2 (Poor)</label>
+          <label><input type="radio" name="starRating" value="1"> ⭐ 1 (Terrible)</label>
+        </div>
+
+        <div class="form-group">
+          <label for="reviewComment">Review & Comments</label>
+          <textarea id="reviewComment" rows="3" placeholder="Punctual, friendly, clean vehicle, great carpool etiquette..."></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" onclick="app.closeModal('reviewModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Submit Feedback ⭐</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 4: Authentication (Login & Register) -->
+  <div id="authModal" class="modal-overlay hidden" onclick="app.closeModalOnOverlay(event, 'authModal')">
+    <div class="modal-card modal-auth">
+      <div class="modal-header">
+        <h2 class="modal-title" id="authModalTitle">Sign In to CampusRide</h2>
+        <button class="modal-close-btn" onclick="app.closeModal('authModal')">&times;</button>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab-btn active" id="tabAuthLogin" onclick="app.switchAuthTab('login')">Sign In</button>
+        <button class="auth-tab-btn" id="tabAuthRegister" onclick="app.switchAuthTab('register')">Create Account</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm" class="auth-form" onsubmit="app.handleLoginSubmit(event)">
+        <div class="form-group">
+          <label for="loginEmail">Campus Email</label>
+          <input type="email" id="loginEmail" required placeholder="alex.rivera@greendale.edu">
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" required placeholder="••••••••">
+        </div>
+        <div class="demo-quick-box">
+          <span>💡 Quick Demo: Password for all seed users is: <strong>password123</strong></span>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Sign In 🚗</button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="registerForm" class="auth-form hidden" onsubmit="app.handleRegisterSubmit(event)">
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="regName">Full Name *</label>
+            <input type="text" id="regName" required placeholder="e.g. Sarah Jenkins">
+          </div>
+          <div class="form-group flex-1">
+            <label for="regRole">Role *</label>
+            <select id="regRole" required>
+              <option value="student">Student</option>
+              <option value="faculty">Faculty</option>
+              <option value="staff">Staff Member</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="regEmail">Campus Email *</label>
+          <input type="email" id="regEmail" required placeholder="username@greendale.edu">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="regCampusId">Student / Employee ID *</label>
+            <input type="text" id="regCampusId" required placeholder="GD-2026-9011">
+          </div>
+          <div class="form-group flex-1">
+            <label for="regDepartment">Department *</label>
+            <input type="text" id="regDepartment" required placeholder="e.g. Computer Science">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="regPhone">Mobile Phone *</label>
+            <input type="tel" id="regPhone" required placeholder="+1 (555) 019-2831">
+          </div>
+          <div class="form-group flex-1">
+            <label for="regPassword">Password *</label>
+            <input type="password" id="regPassword" required placeholder="Min 6 characters">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-pill">
+            <input type="checkbox" id="regIsDriver" onchange="app.toggleRegisterDriverFields(this.checked)">
+            <span>🚘 I also have a vehicle and want to offer rides as a driver</span>
+          </label>
+        </div>
+
+        <div id="regDriverFields" class="driver-extra-fields hidden">
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="regCarModel">Car Model</label>
+              <input type="text" id="regCarModel" placeholder="e.g. Toyota Camry 2022">
+            </div>
+            <div class="form-group flex-1">
+              <label for="regCarPlate">License Plate</label>
+              <input type="text" id="regCarPlate" placeholder="e.g. 7XYZ99">
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Complete Registration 🎉</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 5: User Profile -->
+  <div id="profileModal" class="modal-overlay hidden" onclick="app.closeModalOnOverlay(event, 'profileModal')">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">Campus Member Profile</h2>
+        <button class="modal-close-btn" onclick="app.closeModal('profileModal')">&times;</button>
+      </div>
+      <div class="modal-body" id="profileContent">
+        <!-- Profile info dynamically populated -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 6: Safety Guidelines & SOS -->
+  <div id="safetyModal" class="modal-overlay hidden" onclick="app.closeModalOnOverlay(event, 'safetyModal')">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">🛡️ Campus Safety Guidelines & SOS</h2>
+        <button class="modal-close-btn" onclick="app.closeModal('safetyModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="safety-banner">
+          <div class="safety-badge">24/7 Security Dispatch</div>
+          <p>Campus Police & Transit Safety: <strong>(555) 911-CAMPUS</strong></p>
+        </div>
+
+        <div class="safety-checklist">
+          <div class="safety-item">
+            <span class="safety-icon">🪪</span>
+            <div>
+              <strong>Verified Campus IDs Only</strong>
+              <p>Every driver and rider must register with an active college email and institutional ID.</p>
+            </div>
+          </div>
+          <div class="safety-item">
+            <span class="safety-icon">🔍</span>
+            <div>
+              <strong>Verify Vehicle Details</strong>
+              <p>Check the car model, color, and license plate before entering the vehicle.</p>
+            </div>
+          </div>
+          <div class="safety-item">
+            <span class="safety-icon">📍</span>
+            <div>
+              <strong>Designated Campus Pickup Zones</strong>
+              <p>Use well-lit campus transit gates, library roundabouts, and dorm reception zones.</p>
+            </div>
+          </div>
+          <div class="safety-item">
+            <span class="safety-icon">⭐</span>
+            <div>
+              <strong>Community Ratings & Zero Tolerance</strong>
+              <p>Ratings and reviews keep our community respectful and punctual. Inappropriate behavior results in immediate account suspension.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
