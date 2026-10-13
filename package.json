@@ -18,8 +18,9 @@
     "green-campus"
   ],
   "author": "Google Antigravity Team",
-  "license": "MIT",
-  "type": "commonjs",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
