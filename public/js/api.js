@@ -1,6 +1,27 @@
 // Client-Side API Helper for Campus Ride Sharing
 const API = (() => {
-  const BASE_URL = '/api';
+  function getBaseUrl() {
+    const custom = localStorage.getItem('campus_backend_api_url');
+    if (custom && custom.trim()) {
+      return custom.trim().replace(/\/$/, '') + '/api';
+    }
+    if (window.__BACKEND_API_URL__) {
+      return window.__BACKEND_API_URL__.replace(/\/$/, '') + '/api';
+    }
+    return '/api';
+  }
+
+  function setBackendUrl(url) {
+    if (url && url.trim()) {
+      localStorage.setItem('campus_backend_api_url', url.trim());
+    } else {
+      localStorage.removeItem('campus_backend_api_url');
+    }
+  }
+
+  function getBackendUrl() {
+    return localStorage.getItem('campus_backend_api_url') || '';
+  }
 
   function getToken() {
     return localStorage.getItem('campus_ride_token');
@@ -15,7 +36,8 @@ const API = (() => {
   }
 
   async function request(endpoint, options = {}) {
-    const url = `${BASE_URL}${endpoint}`;
+    const baseUrl = getBaseUrl();
+    const url = `${baseUrl}${endpoint}`;
     const headers = {
       'Content-Type': 'application/json',
       ...options.headers
@@ -46,6 +68,9 @@ const API = (() => {
   }
 
   return {
+    getBaseUrl,
+    setBackendUrl,
+    getBackendUrl,
     getToken,
     setToken,
 

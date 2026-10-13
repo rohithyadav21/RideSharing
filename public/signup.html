@@ -200,8 +200,11 @@
       btnText.textContent = 'Creating account...';
       btnSpinner.classList.remove('hidden');
 
+      const customApi = localStorage.getItem('campus_backend_api_url');
+      const apiEndpoint = customApi ? `${customApi.replace(/\/$/, '')}/api/auth/register` : '/api/auth/register';
+
       try {
-        const response = await fetch('/api/auth/register', {
+        const response = await fetch(apiEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)

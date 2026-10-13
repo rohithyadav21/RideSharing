@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: campus-ride-sharing
+    name: campus-ride-backend
     env: node
     plan: free
     buildCommand: npm install && npm run seed
@@ -8,7 +8,7 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 3000
       - key: JWT_SECRET
         generateValue: true
+      - key: CORS_ORIGIN
+        value: '*'

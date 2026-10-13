@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "outputDirectory": "public",
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/login",
+      "destination": "/login.html"
+    },
+    {
+      "source": "/signup",
+      "destination": "/signup.html"
+    },
+    {
+      "source": "/api/:match*",
+      "destination": "https://campus-ride-backend.onrender.com/api/:match*"
+    }
+  ]
+}
